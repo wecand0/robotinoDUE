@@ -1,4 +1,3 @@
-#include "rec/robotino/api2/utils.h"
 #include <cmath>
 
 			/**
@@ -88,7 +87,7 @@
 				void unproject( float* vx, float* vy, float* omega, float m1, float m2, float m3 ) const
 				{
 					//Convert from RPM to mm/s
-					const double k = 60.0 * _gear / ( 2.0 * rec::robotino::api2::PI * _rw );
+					const double k = 60.0 * _gear / ( 2.0 * 3.14 * _rw );
 
 					*vx = static_cast<float>( ( (double)m3 - (double)m1 ) / sqrt( 3.0 ) / k );
 					*vy = static_cast<float>( 2.0 / 3.0 * ( (double)m1 + 0.5 * ( (double)m3 - (double)m1 ) - (double)m2 ) / k );
