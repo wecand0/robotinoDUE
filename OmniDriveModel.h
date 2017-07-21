@@ -1,9 +1,5 @@
 #include <cmath>
 
-			/**
-			* @brief	Project single motor speeds to velocity vector and vice versa.
-			* 
-			*/
 			class OmniDriveModel
 			{
 			public:
