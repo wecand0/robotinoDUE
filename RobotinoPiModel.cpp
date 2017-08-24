@@ -3,8 +3,8 @@
 
 #include "RobotinoPiModel.hpp"
 
-    const float PI       = 3.14159265359;
-    const float RB       = 0.132;  //Distance from robot center to wheel center in m.
+    	const float PI       = 3.14159265359;
+    	const float RB       = 0.132;  //Distance from robot center to wheel center in m.
 	const float RW       = 80;  //Radius of the wheels in mm.
 	const float GEAR     = 16;   //gear.
 	const float sqrt3of2 = sqrt(3)/2; //sqrt(3)/2
@@ -22,8 +22,8 @@
 
     double RobotinoPiModel::calcCoordinate(double x, double y)
     {
-        double alpha = 0.0; //угол направления робота в градусах
-        alpha = atan2(y , x) * 180 / PI;  //перевод в углы из радиан
+        double alpha = 0.0; //ГіГЈГ®Г« Г­Г ГЇГ°Г ГўГ«ГҐГ­ГЁГї Г°Г®ГЎГ®ГІГ  Гў ГЈГ°Г Г¤ГіГ±Г Гµ
+        alpha = atan2(y , x) * 180 / PI;  //ГЇГҐГ°ГҐГўГ®Г¤ Гў ГіГЈГ«Г» ГЁГ§ Г°Г Г¤ГЁГ Г­
         return alpha;
     }
 
@@ -52,7 +52,7 @@
 
 
 
-    float RobotinoPiModel::convertValueToSpeedEngineA()    // ДО 500 СМ !!!
+    float RobotinoPiModel::convertValueToSpeedEngineA()    // Г„ГЋ 500 Г‘ГЊ !!!
      {
         return (fabs(m_omegaA)) * 255 / 400;
      }
