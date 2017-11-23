@@ -9,6 +9,8 @@
       2 engine   3 engine
 */
 
+#include <Wire.h>
+
 byte encoder1PinA = 53;
 byte encoder1PinB = 52;
 byte encoder2PinA = 51;
@@ -46,9 +48,18 @@ int omega1 = 0;
 int omega2 = 0;
 int omega3 = 0;
 
+/*
+ * input vars from raspberry pi
+ */
+int inTime = 0;
+int radiusOfCircle = 0;
+
 
 void setup()
 {
+  Wire.begin(8);                //join i2c bus with adress #8
+  Wire.onReceive(receiveEvent); //register event
+  
   /*
      all inputs(encoders) -> A & B channels
   */
@@ -87,6 +98,14 @@ void setup()
 void loop()
 {
 
+}
+
+void receiveEvent(int howMany)
+{
+  while(1 < Wire.available())
+  {
+    //http://forum.arduino.cc/index.php?topic=48477.0
+  }
 }
 
 
