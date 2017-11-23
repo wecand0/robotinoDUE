@@ -1,3 +1,14 @@
+/*
+           1 engine
+             =-=   
+              |
+              |
+             / \   
+           /     \    
+         =-=     =-=    
+      2 engine   3 engine
+*/
+
 byte encoder1PinA = 53;
 byte encoder1PinB = 52;
 byte encoder2PinA = 51;
@@ -5,12 +16,22 @@ byte encoder2PinB = 50;
 byte encoder3PinA = 49;
 byte encoder3PinB = 48;
 
-byte pwmEngine1;
-byte pwmEngine2;
-byte pwmEngine3;
+byte pwmEngine1Fovard = 3;
+byte pwmEngine1Back   = 4;
+byte pwmEngine2Fovard = 5;
+byte pwmEngine2Back   = 6;
+byte pwmEngine3Fovard = 5;
+byte pwmEngine3Back   = 6;
+
+int motor1Count = 0;
+int motor2Count = 0;
+int motor3Count = 0;
 
 void setup()
 {
+  /*
+   * all inputs(encoders) -> A & B channels
+   */
   pinMode(encoder1PinA, INPUT);
   pinMode(encoder1PinB, INPUT);
   pinMode(encoder2PinA, INPUT);
@@ -25,48 +46,98 @@ void setup()
   attachInterrupt(encoder3PinB, motor3interruptB, CHANGE);
 
 
-
-  pinMode(pwmEngine1, OUTPUT);
-  pinMode(pwmEngine2, OUTPUT);
-  pinMode(pwmEngine3, OUTPUT);
-  analogWrite(pwmEngine1, 0);
-  analogWrite(pwmEngine2, 0);
-  analogWrite(pwmEngine3, 0);
+  /*
+   * all outputs(PWM)
+   */
+  pinMode(pwmEngine1Fovard, OUTPUT);
+  pinMode(pwmEngine1Back  , OUTPUT);
+  pinMode(pwmEngine2Fovard, OUTPUT);
+  pinMode(pwmEngine2Back  , OUTPUT);
+  pinMode(pwmEngine3Fovard, OUTPUT);
+  pinMode(pwmEngine3Back  , OUTPUT);
+  analogWrite(pwmEngine1Fovard, 0);
+  analogWrite(pwmEngine1Back  , 0);
+  analogWrite(pwmEngine2Fovard, 0);
+  analogWrite(pwmEngine2Back  , 0);
+  analogWrite(pwmEngine3Fovard, 0);
+  analogWrite(pwmEngine3Back  , 0);
 
 }
 
 void loop()
 {
-  
+
 }
 
 
 void motor1interruptA()
 {
-  
+  if (digitalRead(encoder1PinA) != digitalRead(encoder1PinB))
+  {
+    motor1Count--;
+  }
+  else
+  {
+    motor1Count++;
+  }
 }
 
 void motor1interruptB()
 {
-  
+  if (digitalRead(encoder1PinA) != digitalRead(encoder1PinB))
+  {
+    motor1Count++;
+  }
+  else
+  {
+    motor1Count--;
+  }
 }
 
 void motor2interruptA()
 {
-  
+  if (digitalRead(encoder2PinA) != digitalRead(encoder2PinB))
+  {
+    motor2Count--;
+  }
+  else
+  {
+    motor2Count++;
+  }
 }
 
 void motor2interruptB()
 {
-  
+  if (digitalRead(encoder2PinA) != digitalRead(encoder2PinB))
+  {
+    motor2Count++;
+  }
+  else
+  {
+    motor2Count--;
+  }
 }
 
 void motor3interruptA()
 {
-  
+  if (digitalRead(encoder3PinA) != digitalRead(encoder3PinB))
+  {
+    motor3Count--;
+  }
+  else
+  {
+    motor3Count++;
+  }
 }
 
 void motor3interruptB()
 {
-  
+  if (digitalRead(encoder3PinA) != digitalRead(encoder3PinB))
+  {
+    motor3Count++;
+  }
+  else
+  {
+    motor3Count--;
+  }
 }
