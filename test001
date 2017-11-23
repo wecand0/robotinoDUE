@@ -1,0 +1,72 @@
+byte encoder1PinA = 53;
+byte encoder1PinB = 52;
+byte encoder2PinA = 51;
+byte encoder2PinB = 50;
+byte encoder3PinA = 49;
+byte encoder3PinB = 48;
+
+byte pwmEngine1;
+byte pwmEngine2;
+byte pwmEngine3;
+
+void setup()
+{
+  pinMode(encoder1PinA, INPUT);
+  pinMode(encoder1PinB, INPUT);
+  pinMode(encoder2PinA, INPUT);
+  pinMode(encoder2PinB, INPUT);
+  pinMode(encoder3PinA, INPUT);
+  pinMode(encoder3PinB, INPUT);
+  attachInterrupt(encoder1PinA, motor1interruptA, CHANGE);
+  attachInterrupt(encoder1PinB, motor1interruptB, CHANGE);
+  attachInterrupt(encoder2PinA, motor2interruptA, CHANGE);
+  attachInterrupt(encoder2PinB, motor2interruptB, CHANGE);
+  attachInterrupt(encoder3PinA, motor3interruptA, CHANGE);
+  attachInterrupt(encoder3PinB, motor3interruptB, CHANGE);
+
+
+
+  pinMode(pwmEngine1, OUTPUT);
+  pinMode(pwmEngine2, OUTPUT);
+  pinMode(pwmEngine3, OUTPUT);
+  analogWrite(pwmEngine1, 0);
+  analogWrite(pwmEngine2, 0);
+  analogWrite(pwmEngine3, 0);
+
+}
+
+void loop()
+{
+  
+}
+
+
+void motor1interruptA()
+{
+  
+}
+
+void motor1interruptB()
+{
+  
+}
+
+void motor2interruptA()
+{
+  
+}
+
+void motor2interruptB()
+{
+  
+}
+
+void motor3interruptA()
+{
+  
+}
+
+void motor3interruptB()
+{
+  
+}
