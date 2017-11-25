@@ -13,11 +13,11 @@
  * pins in arduino due
  */
 byte m_encoder1PinA     = 53;
-byte m_encoder1PinB     = 52;
-byte m_encoder2PinA     = 51;
-byte m_encoder2PinB     = 50;
-byte m_encoder3PinA     = 49;
-byte m_encoder3PinB     = 48;
+byte m_encoder1PinB     = 51;
+byte m_encoder2PinA     = 49;
+byte m_encoder2PinB     = 47;
+byte m_encoder3PinA     = 45;
+byte m_encoder3PinB     = 43;
 byte m_pwmEngine1Fovard = 3;
 byte m_pwmEngine1Back   = 4;
 byte m_pwmEngine2Fovard = 5;
