@@ -10,8 +10,8 @@
 */
 
 /*
- * pins in arduino due
- */
+   pins in arduino due(global vars)
+*/
 byte m_encoder1PinA     = 53;
 byte m_encoder1PinB     = 52;
 byte m_encoder2PinA     = 51;
@@ -24,8 +24,6 @@ byte m_pwmEngine2Fovard = 5;
 byte m_pwmEngine2Back   = 6;
 byte m_pwmEngine3Fovard = 5;
 byte m_pwmEngine3Back   = 6;
-
-
 
 class Robotino
 {
@@ -71,7 +69,7 @@ Robotino robotino; // global object, cause void setup & loop    :(
 Robotino::Robotino(): //constructor set all vars to zero
   m_motor1Count(0),
   m_motor2Count(0),
-  m_motor3Count(0),    
+  m_motor3Count(0),
   m_velocity(0),
   m_omega1(0),
   m_omega2(0),
@@ -256,7 +254,3 @@ void loop()
 {
 
 }
-
-
-
-
