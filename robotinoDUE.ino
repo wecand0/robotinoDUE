@@ -9,7 +9,6 @@
       2 engine   3 engine
 */
 
-#include <Wire.h>
 
 /*
  * pins in arduino due
