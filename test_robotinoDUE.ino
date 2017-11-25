@@ -1,6 +1,6 @@
 /*
    created: 25 nov. 2017
-   by Vadim Shorin 
+   by Vadim Shorin
    board: arduino due
 */
 
@@ -57,13 +57,13 @@ const byte s_pwmEngine3Back   = 6;
 /*
    parameters of robotino
 */
-const float s_PI       = 3.14159265;
 const float s_L        = 125;            //Distance from robot center to whell center in mm;
 const float s_RW       = 80;             //Radius of the wheels in mm.
 const float s_sqrt3of2 = 0.86602540;     //sqrt(3)/2
 const float s_PRM      = 19.1;           //(60 * GEAR) / (2 * PI * RW ); GEAR == 16
 const float s_gain     = 20;
-
+const float s_maxPRM   = 3200;
+const float s_oneMinuteInsec = 60;
 
 
 
@@ -210,9 +210,9 @@ void Robotino::ClearCounts()
  */
 void Robotino::ConvertTicsToRPM()
 {
-  m_motor1Count = ((m_motor1Count * 60) / 3200);
-  m_motor2Count = ((m_motor2Count * 60) / 3200);
-  m_motor3Count = ((m_motor3Count * 60) / 3200);
+  m_motor1Count = ((m_motor1Count * s_oneMinuteInsec) / s_maxPRM);
+  m_motor2Count = ((m_motor2Count * s_oneMinuteInsec) / s_maxPRM);
+  m_motor3Count = ((m_motor3Count * s_oneMinuteInsec) / s_maxPRM);
 }
 
 /*
@@ -406,7 +406,7 @@ void Robotino::WhichDirectonHbridge3() //less then zero -> false
 */
 void Robotino::SetVelocity(float radius, float inTime)  //Set velocity of driving
 {
-  m_velocity = ((2 * s_PI * radius) / inTime);
+  m_velocity = ((2 * PI * radius) / inTime);
 }
 
 /*
@@ -414,14 +414,14 @@ void Robotino::SetVelocity(float radius, float inTime)  //Set velocity of drivin
 */
 void Robotino::SetOmega1(float inTime) //set omega1
 {
-  m_omega1 = (((1 / s_RW) * (  (-m_velocity * s_sqrt3of2) + ((2 * s_PI * s_L) / inTime))) * s_PRM) * s_gain;
+  m_omega1 = (((1 / s_RW) * (  (-m_velocity * s_sqrt3of2) + ((2 * PI * s_L) / inTime))) * s_PRM) * s_gain;
 }
 /*
    calc omega 2 to circle mode
 */
 void Robotino::SetOmega2(float inTime) //set omega2
 {
-  m_omega2 = ((((2 * s_PI * s_L) / (inTime)) / s_RW) * s_PRM) * s_gain;
+  m_omega2 = ((((2 * PI * s_L) / (inTime)) / s_RW) * s_PRM) * s_gain;
 }
 
 /*
@@ -429,7 +429,7 @@ void Robotino::SetOmega2(float inTime) //set omega2
 */
 void Robotino::SetOmega3(float inTime) //set omega3
 {
-  m_omega3 = (((1 / s_RW) * (  (m_velocity * s_sqrt3of2) + ((2 * s_PI * s_L) / inTime))) * s_PRM) * s_gain;
+  m_omega3 = (((1 / s_RW) * (  (m_velocity * s_sqrt3of2) + ((2 * PI * s_L) / inTime))) * s_PRM) * s_gain;
 }
 
 
@@ -498,10 +498,10 @@ void SetConfiguration()
   float radius = 318; //cm
   float inTime = 20;  //seconds
 
-  robotino.SetVelocity(radius, inTime);   // ->  100 mm/s
-  robotino.SetOmega1(inTime);             // -> -225 PRM
-  robotino.SetOmega2(inTime);             // ->  187  PRM
-  robotino.SetOmega3(inTime);             // ->  600  PRM
+  robotino.SetVelocity(radius, inTime);   // ->  ~ 100 mm/s
+  robotino.SetOmega1(inTime);             // -> ~ -225 PRM
+  robotino.SetOmega2(inTime);             // ->  ~ 187  PRM
+  robotino.SetOmega3(inTime);             // ->  ~ 600  PRM
   robotino.WhichDirectonHbridge1();
   robotino.WhichDirectonHbridge2();
   robotino.WhichDirectonHbridge3();
