@@ -13,11 +13,11 @@
  * pins in arduino due
  */
 byte m_encoder1PinA     = 53;
-byte m_encoder1PinB     = 51;
-byte m_encoder2PinA     = 49;
-byte m_encoder2PinB     = 47;
-byte m_encoder3PinA     = 45;
-byte m_encoder3PinB     = 43;
+byte m_encoder1PinB     = 52;
+byte m_encoder2PinA     = 51;
+byte m_encoder2PinB     = 50;
+byte m_encoder3PinA     = 49;
+byte m_encoder3PinB     = 48;
 byte m_pwmEngine1Fovard = 3;
 byte m_pwmEngine1Back   = 4;
 byte m_pwmEngine2Fovard = 5;
@@ -46,20 +46,19 @@ class Robotino
     void SetOmega3(float inTime);                  //set omega1
 
   private:
-    volatile int m_motor1Count;
-    volatile int m_motor2Count;
-    volatile int m_motor3Count;
-
-    const float s_PI       = 3.14159265359;
-    const float s_L        = 0.125;     //Distance from robot center to whell center in m;
-    const float s_RW       = 80;        //Radius of the wheels in mm.
-    const float s_GEAR     = 16;        //gear.
-    const float s_sqrt3of2 = sqrt(3) / 2; //sqrt(3)/2
+    const float s_PI       = 3.14159265;
+    const float s_L        = 0.125;      //Distance from robot center to whell center in m;
+    const float s_RW       = 80;         //Radius of the wheels in mm.
+    const float s_GEAR     = 16;         //gear.
+    const float s_sqrt3of2 = 0.86602540; //sqrt(3)/2
     const float s_PRM      = 19.1;           //(60 * GEAR) / (2 * PI * RW );
 
     /*
        vars after calculate
     */
+    volatile double m_motor1Count;
+    volatile double m_motor2Count;
+    volatile double m_motor3Count;
     volatile int m_velocity; // velocity of robot
     volatile int m_omega1;
     volatile int m_omega2;
@@ -69,22 +68,15 @@ class Robotino
 
 Robotino robotino; // global object, cause void setup & loop    :(
 
-Robotino::Robotino() //constructor set all vars to zero
-{
-  analogWrite(m_pwmEngine1Fovard, 0);
-  analogWrite(m_pwmEngine1Back  , 0);
-  analogWrite(m_pwmEngine2Fovard, 0);
-  analogWrite(m_pwmEngine2Back  , 0);
-  analogWrite(m_pwmEngine3Fovard, 0);
-  analogWrite(m_pwmEngine3Back  , 0);
-  int m_motor1Count = 0;
-  int m_motor2Count = 0;
-  int m_motor3Count = 0;    
-  int m_velocity = 0;
-  int m_omega1 = 0;
-  int m_omega2 = 0;
-  int m_omega3 = 0;
-}
+Robotino::Robotino(): //constructor set all vars to zero
+  m_motor1Count(0),
+  m_motor2Count(0),
+  m_motor3Count(0),    
+  m_velocity(0),
+  m_omega1(0),
+  m_omega2(0),
+  m_omega3(0)
+{}
 
 void Robotino::Motor1InterruptA()
 {
@@ -250,6 +242,12 @@ void setup()
   pinMode(m_pwmEngine2Back  , OUTPUT);
   pinMode(m_pwmEngine3Fovard, OUTPUT);
   pinMode(m_pwmEngine3Back  , OUTPUT);
+  analogWrite(m_pwmEngine1Fovard, 0);
+  analogWrite(m_pwmEngine1Back  , 0);
+  analogWrite(m_pwmEngine2Fovard, 0);
+  analogWrite(m_pwmEngine2Back  , 0);
+  analogWrite(m_pwmEngine3Fovard, 0);
+  analogWrite(m_pwmEngine3Back  , 0);
 
 
 }
