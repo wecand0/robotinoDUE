@@ -9,7 +9,6 @@
       2 engine   3 engine
 */
 
-
 /*
  * pins in arduino due
  */
@@ -47,13 +46,9 @@ class Robotino
     void SetOmega3(float inTime);                  //set omega1
 
   private:
-    int m_motor1Count;
-    int m_motor2Count;
-    int m_motor3Count;
-
-    int m_prmEngine1;
-    int m_prmEngine2;
-    int m_prmEngine3;
+    volatile int m_motor1Count;
+    volatile int m_motor2Count;
+    volatile int m_motor3Count;
 
     const float s_PI       = 3.14159265359;
     const float s_L        = 0.125;     //Distance from robot center to whell center in m;
@@ -65,10 +60,10 @@ class Robotino
     /*
        vars after calculate
     */
-    int m_velocity; // velocity of robot
-    int m_omega1;
-    int m_omega2;
-    int m_omega3;
+    volatile int m_velocity; // velocity of robot
+    volatile int m_omega1;
+    volatile int m_omega2;
+    volatile int m_omega3;
 
 };
 
@@ -84,10 +79,7 @@ Robotino::Robotino() //constructor set all vars to zero
   analogWrite(m_pwmEngine3Back  , 0);
   int m_motor1Count = 0;
   int m_motor2Count = 0;
-  int m_motor3Count = 0;
-  int m_prmEngine1 = 0;
-  int m_prmEngine2 = 0;
-  int m_prmEngine3 = 0;
+  int m_motor3Count = 0;    
   int m_velocity = 0;
   int m_omega1 = 0;
   int m_omega2 = 0;
@@ -198,19 +190,19 @@ void Motor3InterruptBFunction()
 
 bool Robotino::WhichDirectonHbridge1() //less then zero -> false
 {
-  bool isWhichDirection = m_prmEngine1 < 0 ? false : true;
+  bool isWhichDirection = m_omega1 < 0 ? false : true;
   return isWhichDirection;
 }
 
 bool Robotino::WhichDirectonHbridge2() //less then zero -> false
 {
-  bool isWhichDirection = m_prmEngine2 < 0 ? false : true;
+  bool isWhichDirection = m_omega2 < 0 ? false : true;
   return isWhichDirection;
 }
 
 bool Robotino::WhichDirectonHbridge3() //less then zero -> false
 {
-  bool isWhichDirection = m_prmEngine3 < 0 ? false : true;
+  bool isWhichDirection = m_omega3 < 0 ? false : true;
   return isWhichDirection;
 }
 
