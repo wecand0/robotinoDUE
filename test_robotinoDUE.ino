@@ -1,19 +1,32 @@
 /*
    created: 25 nov. 2017
-   by Vadim Shorin 
+   by Shorin Vadim
    board: arduino due
 */
 
 /*
+ * =-= (engines)
+ * <- direction of engines
+ * 
+ * 
            1 engine
-             =-=
+           <-=-=
               |
               |
              / \
            /     \
-         =-=     =-=
+         =-=->  =-=->
       2 engine   3 engine
-*/
+      
+ *     words in short:
+ *     PRM -> Revolutions per minute
+ *     PWM -> Pulse-width modulation
+ */
+
+ /*
+  *     3 buttons:
+  *     o - circle mode (left)     o - on/off mode (center)     o - bouncing mode(right)
+  */
 
 /*
    encoders (3 items)
@@ -48,8 +61,12 @@ const float s_PI       = 3.14159265;
 const float s_L        = 125;            //Distance from robot center to whell center in mm;
 const float s_RW       = 80;             //Radius of the wheels in mm.
 const float s_sqrt3of2 = 0.86602540;     //sqrt(3)/2
-const float s_PRM      = 19.1;           //(60 * GEAR) / (2 * PI * RW ); GEAR==16
+const float s_PRM      = 19.1;           //(60 * GEAR) / (2 * PI * RW ); GEAR == 16
 const float s_gain     = 20;
+
+
+
+
 
 class Robotino
 {
@@ -127,19 +144,14 @@ Robotino::Robotino():
   analogWrite(s_pwmEngine3Back  , 0);
 }
 
-void Robotino::ClearCounts()
-{
-  m_motor1Count = 0;
-  m_motor2Count = 0;
-  m_motor3Count = 0;
-}
 
-void Robotino::ConvertTicsToRPM()
-{
-  m_motor1Count = ((m_motor1Count * 60) / 3200);
-  m_motor2Count = ((m_motor2Count * 60) / 3200);
-  m_motor3Count = ((m_motor3Count * 60) / 3200);
-}
+
+//////////////////////////////////
+///////////GET methods////////////
+/////////////////////////////////
+
+
+
 
 double Robotino::GetVelocity()
 {
@@ -174,6 +186,33 @@ double Robotino::GetMotor2Count()
 double Robotino::GetMotor3Count()
 {
   return m_motor3Count;
+}
+
+
+
+
+/////////////////////////////////
+///////////SET methods///////////
+/////////////////////////////////
+
+/*
+ * set all counts of tics in encoders to zero
+ */
+void Robotino::ClearCounts()
+{
+  m_motor1Count = 0;
+  m_motor2Count = 0;
+  m_motor3Count = 0;
+}
+
+/*
+ * convert all tics in encoders to RPM
+ */
+void Robotino::ConvertTicsToRPM()
+{
+  m_motor1Count = ((m_motor1Count * 60) / 3200);
+  m_motor2Count = ((m_motor2Count * 60) / 3200);
+  m_motor3Count = ((m_motor3Count * 60) / 3200);
 }
 
 /*
@@ -363,7 +402,7 @@ void Robotino::WhichDirectonHbridge3() //less then zero -> false
 }
 
 /*
-   calc velocity of robot
+   calc velocity of robot to circle mode
 */
 void Robotino::SetVelocity(float radius, float inTime)  //Set velocity of driving
 {
@@ -371,14 +410,14 @@ void Robotino::SetVelocity(float radius, float inTime)  //Set velocity of drivin
 }
 
 /*
-   calc omega 1
+   calc omega 1 to circle mode
 */
 void Robotino::SetOmega1(float inTime) //set omega1
 {
   m_omega1 = (((1 / s_RW) * (  (-m_velocity * s_sqrt3of2) + ((2 * s_PI * s_L) / inTime))) * s_PRM) * s_gain;
 }
 /*
-   calc omega 2
+   calc omega 2 to circle mode
 */
 void Robotino::SetOmega2(float inTime) //set omega2
 {
@@ -386,7 +425,7 @@ void Robotino::SetOmega2(float inTime) //set omega2
 }
 
 /*
-   calc omega 3
+   calc omega 3 to circle mode
 */
 void Robotino::SetOmega3(float inTime) //set omega3
 {
@@ -459,10 +498,10 @@ void SetConfiguration()
   float radius = 318; //cm
   float inTime = 20;  //seconds
 
-  robotino.SetVelocity(radius, inTime);   // -> 100 mm/s
+  robotino.SetVelocity(radius, inTime);   // ->  100 mm/s
   robotino.SetOmega1(inTime);             // -> -225 PRM
-  robotino.SetOmega2(inTime);             // -> 187  PRM
-  robotino.SetOmega3(inTime);             // -> 600  PRM
+  robotino.SetOmega2(inTime);             // ->  187  PRM
+  robotino.SetOmega3(inTime);             // ->  600  PRM
   robotino.WhichDirectonHbridge1();
   robotino.WhichDirectonHbridge2();
   robotino.WhichDirectonHbridge3();
