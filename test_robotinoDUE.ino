@@ -1,6 +1,6 @@
 /*
    created: 25 nov. 2017
-   by Shorin Vadim
+   by Vadim Shorin 
    board: arduino due
 */
 
