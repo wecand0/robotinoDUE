@@ -147,7 +147,13 @@ Robotino::Robotino():
   m_velocity(0),
   m_omega1(0),
   m_omega2(0),
-  m_omega3(0)
+  m_omega3(0),
+  m_direction1(0),
+  m_direction2(0),
+  m_direction3(0),
+  m_pwm1(0),
+  m_pwm2(0),
+  m_pwm3(0)
 {
   /*
      turn off all engines in start of program
