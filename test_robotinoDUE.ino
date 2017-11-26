@@ -67,6 +67,7 @@ const float s_PRM      = 19.1;           //(60 * GEAR) / (2 * PI * RW ); GEAR ==
 const float s_gain     = 20;
 const float s_maxPRM   = 3200;
 const float s_oneMinuteInsec = 60;
+const float s_oneRPMtoPWM = 17;     // 17 RPM == 1 PWM
 
 
 
@@ -93,6 +94,7 @@ class Robotino
     void SetOmega2(float inTime);                  //set omega2
     void SetOmega3(float inTime);                  //set omega3
     void ClearCounts();
+    void CalcPWM();
     double GetVelocity();
     double GetOmega1();
     double GetOmega2();
@@ -100,6 +102,13 @@ class Robotino
     double GetMotor1Count();
     double GetMotor2Count();
     double GetMotor3Count();
+    int GetPWM1();
+    int GetPWM2();
+    int GetPWM3();
+    bool GetDirection1();
+    bool GetDirection2();
+    bool GetDirection3();
+
 
 
   private:
@@ -116,6 +125,10 @@ class Robotino
     volatile bool m_direction1;
     volatile bool m_direction2;
     volatile bool m_direction3;
+    volatile int m_pwm1;
+    volatile int m_pwm2;
+    volatile int m_pwm3;
+
 
 };
 
@@ -153,8 +166,35 @@ Robotino::Robotino():
 ///////////GET methods////////////
 /////////////////////////////////
 
+bool Robotino::GetDirection1()
+{
+  return m_direction1;
+}
 
+bool Robotino::GetDirection2()
+{
+  return m_direction2;
+}
 
+bool Robotino::GetDirection3()
+{
+  return m_direction3;
+}
+
+int Robotino::GetPWM1()
+{
+  return m_pwm1;
+}
+
+int Robotino::GetPWM2()
+{
+  return m_pwm2;
+}
+
+int Robotino::GetPWM3()
+{
+  return m_pwm3;
+}
 
 double Robotino::GetVelocity()
 {
@@ -435,6 +475,13 @@ void Robotino::SetOmega3(float inTime) //set omega3
   m_omega3 = (((1 / s_RW) * (  (m_velocity * s_sqrt3of2) + ((2 * PI * s_L) / inTime))) * s_PRM) * s_gain;
 }
 
+void Robotino::CalcPWM()
+{
+  m_pwm1 = m_omega1 / s_oneRPMtoPWM;
+  m_pwm2 = m_omega2 / s_oneRPMtoPWM;
+  m_pwm3 = m_omega3 / s_oneRPMtoPWM;
+}
+
 
 
 
@@ -447,8 +494,8 @@ void Robotino::SetOmega3(float inTime) //set omega3
 
 
 /*
- * vars for PID regulator
- */
+   vars for PID regulator
+*/
 
 volatile double Kp = 0.00;
 volatile double Ki = 0.00;
@@ -477,7 +524,7 @@ PID pid3(&Input3, &Output3, &Setpoint3, Kp, Ki, Kd, DIRECT);
 void setup()
 {
   Serial.begin(112500);   //TODO del after testing
-  
+
   pinMode(s_encoder1PinA, INPUT);
   pinMode(s_encoder1PinB, INPUT);
   pinMode(s_encoder2PinA, INPUT);
@@ -534,26 +581,8 @@ void setup()
      config hardware
   */
   SetConfiguration();
-  CalcPWM();
 
   Serial.println("READY TO START");    //TODO del after testing
-}
-
-void loop()
-{
-  //testing
-
-  robotino.ClearCounts();
-  delay(1000);
-  robotino.ConvertTicsToRPM();
-  Serial.print(" count1: ");   Serial.println(robotino.GetMotor1Count());
-  Serial.print(" count2: ");   Serial.println(robotino.GetMotor2Count());
-  Serial.print(" count3: ");   Serial.println(robotino.GetMotor3Count());
-  Serial.print(" velocity: "); Serial.println(robotino.GetVelocity());
-  Serial.print(" omega1: ");   Serial.println(robotino.GetOmega1());
-  Serial.print(" omega2: ");   Serial.println(robotino.GetOmega2());
-  Serial.print(" omega3: ");   Serial.println(robotino.GetOmega3());
-  delay(1000);
 }
 
 void SetConfiguration()
@@ -568,12 +597,64 @@ void SetConfiguration()
   robotino.WhichDirectonHbridge1();
   robotino.WhichDirectonHbridge2();
   robotino.WhichDirectonHbridge3();
+  robotino.CalcPWM();
 }
 
-void CalcPWM()
+
+void loop()
 {
+  //testing
 
+  robotino.ClearCounts();
+  delay(1000);
+  robotino.ConvertTicsToRPM();
+
+  //engine 1
+  if (robotino.GetDirection1() == true)
+  {
+    analogWrite(s_pwmEngine1Fovard, robotino.GetPWM1());
+  }
+  else if (robotino.GetDirection1() == false)
+  {
+    analogWrite(s_pwmEngine1Back, robotino.GetPWM1());
+  }
+
+  //engine 2
+  if (robotino.GetDirection2() == true)
+  {
+    analogWrite(s_pwmEngine2Fovard, robotino.GetPWM2());
+  }
+  else if (robotino.GetDirection2() == false)
+  {
+    analogWrite(s_pwmEngine2Back, robotino.GetPWM2());
+  }
+
+  //engine 3
+  if (robotino.GetDirection3() == true)
+  {
+    analogWrite(s_pwmEngine3Fovard, robotino.GetPWM3());
+  }
+  else if (robotino.GetDirection3() == false)
+  {
+    analogWrite(s_pwmEngine3Back, robotino.GetPWM3());
+  }
+
+  Serial.print(" count1: ");   Serial.println(robotino.GetMotor1Count());
+  Serial.print(" count2: ");   Serial.println(robotino.GetMotor2Count());
+  Serial.print(" count3: ");   Serial.println(robotino.GetMotor3Count());
+  Serial.print(" velocity: "); Serial.println(robotino.GetVelocity());
+  Serial.print(" omega1: ");   Serial.println(robotino.GetOmega1());
+  Serial.print(" omega2: ");   Serial.println(robotino.GetOmega2());
+  Serial.print(" omega3: ");   Serial.println(robotino.GetOmega3());
+  Serial.print(" pwm1: ");     Serial.println(robotino.GetPWM1());
+  Serial.print(" pwm2: ");     Serial.println(robotino.GetPWM2());
+  Serial.print(" pwm3: ");     Serial.println(robotino.GetPWM3());
+  delay(1000);
 }
+
+
+
+
 
 void CircleMode()
 {
