@@ -5,10 +5,10 @@
 */
 
 /*
- * =-= (engines)
- * <- direction of engines
- * 
- * 
+   =-= (engines)
+   <- direction of engines
+
+
            1 engine
            <-=-=
               |
@@ -17,19 +17,22 @@
            /     \
          =-=->  =-=->
       2 engine   3 engine
-      
- *     words in short:
- *     PRM -> Revolutions per minute
- *     PWM -> Pulse-width modulation
- */
 
- /*
-  *     3 buttons:
-  *     o - circle mode (left)     o - on/off mode (center)     o - bouncing mode(right)
-  */
+       words in short:
+       PRM -> Revolutions per minute
+       PWM -> Pulse-width modulation
+*/
 
 /*
-   encoders (3 items)
+       3 buttons:
+       o - circle mode (left)     o - on/off mode (center)     o - bouncing mode(right)
+*/
+
+
+#include <PID_v1.h>
+
+/*
+    encoders (3 items)
 */
 const byte s_encoder1PinA     = 53;
 const byte s_encoder1PinB     = 52;
@@ -39,7 +42,7 @@ const byte s_encoder3PinA     = 49;
 const byte s_encoder3PinB     = 48;
 
 /*
-   buttons
+    buttons
 */
 const byte s_circleMode       = 46;
 const byte s_bouncingMode     = 44;
@@ -89,6 +92,7 @@ class Robotino
     void SetOmega1(float inTime);                  //set omega1
     void SetOmega2(float inTime);                  //set omega2
     void SetOmega3(float inTime);                  //set omega3
+    void ClearCounts();
     double GetVelocity();
     double GetOmega1();
     double GetOmega2();
@@ -96,8 +100,7 @@ class Robotino
     double GetMotor1Count();
     double GetMotor2Count();
     double GetMotor3Count();
-    
-    void ClearCounts();
+
 
   private:
     /*
@@ -134,7 +137,7 @@ Robotino::Robotino():
   m_omega3(0)
 {
   /*
-     turn off all engines
+     turn off all engines in start of program
   */
   analogWrite(s_pwmEngine1Fovard, 0);
   analogWrite(s_pwmEngine1Back  , 0);
@@ -196,8 +199,8 @@ double Robotino::GetMotor3Count()
 /////////////////////////////////
 
 /*
- * set all counts of tics in encoders to zero
- */
+   set all counts of tics in encoders to zero
+*/
 void Robotino::ClearCounts()
 {
   m_motor1Count = 0;
@@ -206,8 +209,8 @@ void Robotino::ClearCounts()
 }
 
 /*
- * convert all tics in encoders to RPM
- */
+   convert all tics in encoders to RPM
+*/
 void Robotino::ConvertTicsToRPM()
 {
   m_motor1Count = ((m_motor1Count * s_oneMinuteInsec) / s_maxPRM);
@@ -434,9 +437,47 @@ void Robotino::SetOmega3(float inTime) //set omega3
 
 
 
+
+
+
+
+///////////////////////////////////
+///////////PID regulator///////////
+///////////////////////////////////
+
+
+/*
+ * vars for PID regulator
+ */
+
+volatile double Kp = 0.00;
+volatile double Ki = 0.00;
+volatile double Kd = 0.00;
+
+double Setpoint1,
+       Input1,
+       Output1,
+       SetpointMove1;
+PID pid1(&Input1, &Output1, &Setpoint1, Kp, Ki, Kd, DIRECT);
+
+double Setpoint2,
+       Input2,
+       Output2,
+       SetpointMove2;
+PID pid2(&Input2, &Output2, &Setpoint2, Kp, Ki, Kd, DIRECT);
+
+double Setpoint3,
+       Input3,
+       Output3,
+       SetpointMove3;
+PID pid3(&Input3, &Output3, &Setpoint3, Kp, Ki, Kd, DIRECT);
+
+
+
 void setup()
 {
-  Serial.begin(112500);
+  Serial.begin(112500);   //TODO del after testing
+  
   pinMode(s_encoder1PinA, INPUT);
   pinMode(s_encoder1PinB, INPUT);
   pinMode(s_encoder2PinA, INPUT);
@@ -467,19 +508,41 @@ void setup()
   analogWrite(s_pwmEngine3Fovard, 0);
   analogWrite(s_pwmEngine3Back  , 0);
 
+
+  /*
+     config PID regulator
+  */
+  pid1.SetMode(AUTOMATIC);
+  pid1.SetOutputLimits(0, 255);
+  Setpoint1 = 0;
+  SetpointMove1 = 0;
+
+
+  pid2.SetMode(AUTOMATIC);
+  pid2.SetOutputLimits(0, 255);
+  Setpoint2 = 0;
+  SetpointMove2 = 0;
+
+
+  pid3.SetMode(AUTOMATIC);
+  pid3.SetOutputLimits(0, 255);
+  Setpoint3 = 0;
+  SetpointMove3 = 0;
+
+
   /*
      config hardware
   */
   SetConfiguration();
   CalcPWM();
 
-
+  Serial.println("READY TO START");    //TODO del after testing
 }
 
 void loop()
 {
   //testing
-  
+
   robotino.ClearCounts();
   delay(1000);
   robotino.ConvertTicsToRPM();
