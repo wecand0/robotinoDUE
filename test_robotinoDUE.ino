@@ -65,9 +65,10 @@ const float s_RW       = 80;             //Radius of the wheels in mm.
 const float s_sqrt3of2 = 0.86602540;     //sqrt(3)/2
 const float s_PRM      = 19.1;           //(60 * GEAR) / (2 * PI * RW ); GEAR == 16
 const float s_gain     = 20;
-const float s_maxPRM   = 3200;
+const float s_maxTics   = 2000;
 const float s_oneMinuteInsec = 60;
-const float s_oneRPMtoPWM = 17;     // 17 RPM == 1 PWM
+//const float s_oneRPMtoPWM = 17;     // 17 RPM == 1 PWM without load
+const float s_oneRPMtoPWM = 15;       // 15 RPM == 1 PWM with load
 
 
 
@@ -259,9 +260,9 @@ void Robotino::ClearCounts()
 */
 void Robotino::ConvertTicsToRPM()
 {
-  m_motor1Count = ((m_motor1Count * s_oneMinuteInsec) / s_maxPRM);
-  m_motor2Count = ((m_motor2Count * s_oneMinuteInsec) / s_maxPRM);
-  m_motor3Count = ((m_motor3Count * s_oneMinuteInsec) / s_maxPRM);
+  m_motor1Count = ((m_motor1Count * s_oneMinuteInsec) / s_maxTics);
+  m_motor2Count = ((m_motor2Count * s_oneMinuteInsec) / s_maxTics);
+  m_motor3Count = ((m_motor3Count * s_oneMinuteInsec) / s_maxTics);
 }
 
 /*
