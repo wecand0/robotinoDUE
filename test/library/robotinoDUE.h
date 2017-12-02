@@ -44,11 +44,6 @@ class Robotino
 };
 
 /*
-   create object
-*/
-Robotino robotino; // global object, cause its arduino.. :(
-
-/*
    //constructor set all vars to zero
 */
 Robotino::Robotino():
@@ -61,12 +56,6 @@ Robotino::Robotino():
   m_direction3(0)
 {
 }
-
-
-
-//////////////////////////////////
-///////////GET methods////////////
-/////////////////////////////////
 
 bool Robotino::GetDirection1()
 {
