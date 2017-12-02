@@ -60,17 +60,37 @@ const byte s_pwmEngine3Back   = 6;
 /*
    parameters of robotino
 */
-const float s_L        = 125;            //Distance from robot center to whell center in mm;
-const float s_RW       = 80;             //Radius of the wheels in mm.
-const float s_sqrt3of2 = 0.86602540;     //sqrt(3)/2
-const float s_PRM      = 19.1;           //(60 * GEAR) / (2 * PI * RW ); GEAR == 16
-const float s_gain     = 20;
-const float s_maxTics   = 2000;
+const float s_L          = 125;            //Distance from robot center to whell center in mm;
+const float s_RW        = 80;             //Radius of the wheels in mm.
+const float s_sqrt3of2  = 0.86602540;     //sqrt(3)/2
+const float s_PRM       = 19.1;           //(60 * GEAR) / (2 * PI * RW ); GEAR == 16
+const float s_gain      = 20;
+const float s_allTics   = 2000;
 const float s_oneMinuteInsec = 60;
-//const float s_oneRPMtoPWM = 17;     // 17 RPM == 1 PWM without load
-const float s_oneRPMtoPWM = 15;       // 15 RPM == 1 PWM with load
+//const float s_oneRPMtoPWM  = 17;     // 17 RPM == 1 PWM  without load
+const float s_oneRPMtoPWM    = 15;     // 15 RPM == 1 PWM  with load
 
 
+volatile double motor1Count;
+volatile double motor2Count;
+volatile double motor3Count;
+volatile int pwm1;
+volatile int pwm2;
+volatile int pwm3;
+
+
+/*
+   prototypes of functions
+*/
+void ClearCounts();
+void ConvertTicsToRPM();
+void CalcPWM();
+void Motor1InterruptA();
+void Motor1InterruptB();
+void Motor2InterruptA();
+void Motor2InterruptB();
+void Motor3InterruptA();
+void Motor3InterruptB();
 
 
 class Robotino
@@ -80,13 +100,6 @@ class Robotino
        prototypes of methods
     */
     Robotino();
-    void ConvertTicsToRPM();
-    void Motor1InterruptA();
-    void Motor1InterruptB();
-    void Motor2InterruptA();
-    void Motor2InterruptB();
-    void Motor3InterruptA();
-    void Motor3InterruptB();
     void WhichDirectonHbridge1();
     void WhichDirectonHbridge2();
     void WhichDirectonHbridge3();
@@ -94,31 +107,18 @@ class Robotino
     void SetOmega1(float inTime);                  //set omega1
     void SetOmega2(float inTime);                  //set omega2
     void SetOmega3(float inTime);                  //set omega3
-    void ClearCounts();
-    void CalcPWM();
     double GetVelocity();
     double GetOmega1();
     double GetOmega2();
     double GetOmega3();
-    double GetMotor1Count();
-    double GetMotor2Count();
-    double GetMotor3Count();
-    int GetPWM1();
-    int GetPWM2();
-    int GetPWM3();
     bool GetDirection1();
     bool GetDirection2();
     bool GetDirection3();
-
-
 
   private:
     /*
        vars after calculate
     */
-    volatile double m_motor1Count;
-    volatile double m_motor2Count;
-    volatile double m_motor3Count;
     volatile int m_velocity; // velocity of robot
     volatile int m_omega1;
     volatile int m_omega2;
@@ -126,9 +126,6 @@ class Robotino
     volatile bool m_direction1;
     volatile bool m_direction2;
     volatile bool m_direction3;
-    volatile int m_pwm1;
-    volatile int m_pwm2;
-    volatile int m_pwm3;
 
 
 };
@@ -142,19 +139,13 @@ Robotino robotino; // global object, cause its arduino.. :(
    //constructor set all vars to zero
 */
 Robotino::Robotino():
-  m_motor1Count(0),
-  m_motor2Count(0),
-  m_motor3Count(0),
   m_velocity(0),
   m_omega1(0),
   m_omega2(0),
   m_omega3(0),
   m_direction1(0),
   m_direction2(0),
-  m_direction3(0),
-  m_pwm1(0),
-  m_pwm2(0),
-  m_pwm3(0)
+  m_direction3(0)
 {
   /*
      turn off all engines in start of program
@@ -188,21 +179,6 @@ bool Robotino::GetDirection3()
   return m_direction3;
 }
 
-int Robotino::GetPWM1()
-{
-  return m_pwm1;
-}
-
-int Robotino::GetPWM2()
-{
-  return m_pwm2;
-}
-
-int Robotino::GetPWM3()
-{
-  return m_pwm3;
-}
-
 double Robotino::GetVelocity()
 {
   return m_velocity;
@@ -223,22 +199,6 @@ double Robotino::GetOmega3()
   return m_omega3;
 }
 
-double Robotino::GetMotor1Count()
-{
-  return m_motor1Count;
-}
-
-double Robotino::GetMotor2Count()
-{
-  return m_motor2Count;
-}
-
-double Robotino::GetMotor3Count()
-{
-  return m_motor3Count;
-}
-
-
 
 
 /////////////////////////////////
@@ -246,161 +206,93 @@ double Robotino::GetMotor3Count()
 /////////////////////////////////
 
 /*
-   set all counts of tics in encoders to zero
+   calc prm motor 1
 */
-void Robotino::ClearCounts()
+void Motor1InterruptA()
 {
-  m_motor1Count = 0;
-  m_motor2Count = 0;
-  m_motor3Count = 0;
-}
-
-/*
-   convert all tics in encoders to RPM
-*/
-void Robotino::ConvertTicsToRPM()
-{
-  m_motor1Count = ((m_motor1Count * s_oneMinuteInsec) / s_maxTics);
-  m_motor2Count = ((m_motor2Count * s_oneMinuteInsec) / s_maxTics);
-  m_motor3Count = ((m_motor3Count * s_oneMinuteInsec) / s_maxTics);
+  if (digitalRead(s_encoder1PinA) != digitalRead(s_encoder1PinB))
+  {
+    motor1Count--;
+  }
+  else
+  {
+    motor1Count++;
+  }
 }
 
 /*
    calc prm motor 1
 */
-void Robotino::Motor1InterruptA()
+void Motor1InterruptB()
 {
   if (digitalRead(s_encoder1PinA) != digitalRead(s_encoder1PinB))
   {
-    m_motor1Count--;
+    motor1Count++;
   }
   else
   {
-    m_motor1Count++;
+    motor1Count--;
   }
-}
-
-/*
-   mini hack for class
-*/
-void Motor1InterruptAFunction()
-{
-  robotino.Motor1InterruptA();
-}
-
-/*
-   calc prm motor 1
-*/
-void Robotino::Motor1InterruptB()
-{
-  if (digitalRead(s_encoder1PinA) != digitalRead(s_encoder1PinB))
-  {
-    m_motor1Count++;
-  }
-  else
-  {
-    m_motor1Count--;
-  }
-}
-
-/*
-   mini hack for class
-*/
-void Motor1InterruptBFunction()
-{
-  robotino.Motor1InterruptB();
 }
 
 /*
    calc prm motor 2
 */
-void Robotino::Motor2InterruptA()
+void Motor2InterruptA()
 {
   if (digitalRead(s_encoder2PinA) != digitalRead(s_encoder2PinB))
   {
-    m_motor2Count--;
+    motor2Count--;
   }
   else
   {
-    m_motor2Count++;
+    motor2Count++;
   }
-}
-
-/*
-    mini hack for class
-*/
-void Motor2InterruptAFunction()
-{
-  robotino.Motor2InterruptA();
 }
 
 /*
    calc prm motor 2
 */
-void Robotino::Motor2InterruptB()
+void Motor2InterruptB()
 {
   if (digitalRead(s_encoder2PinA) != digitalRead(s_encoder2PinB))
   {
-    m_motor2Count++;
+    motor2Count++;
   }
   else
   {
-    m_motor2Count--;
+    motor2Count--;
   }
-}
-
-/*
-    mini hack for class
-*/
-void Motor2InterruptBFunction()
-{
-  robotino.Motor2InterruptB();
 }
 
 /*
    calc prm motor 3
 */
-void Robotino::Motor3InterruptA()
+void Motor3InterruptA()
 {
   if (digitalRead(s_encoder3PinA) != digitalRead(s_encoder3PinB))
   {
-    m_motor3Count--;
+    motor3Count--;
   }
   else
   {
-    m_motor3Count++;
+    motor3Count++;
   }
-}
-
-/*
-    mini hack for class
-*/
-void Motor3InterruptAFunction()
-{
-  robotino.Motor3InterruptA();
 }
 
 /*
    calc prm motor 3
 */
-void Robotino::Motor3InterruptB()
+void Motor3InterruptB()
 {
   if (digitalRead(s_encoder3PinA) != digitalRead(s_encoder3PinB))
   {
-    m_motor3Count++;
+    motor3Count++;
   }
   else
   {
-    m_motor3Count--;
+    motor3Count--;
   }
-}
-
-/*
-    mini hack for class
-*/
-void Motor3InterruptBFunction()
-{
-  robotino.Motor3InterruptB();
 }
 
 /*
@@ -482,11 +374,31 @@ void Robotino::SetOmega3(float inTime) //set omega3
   m_omega3 = (((1 / s_RW) * (  (m_velocity * s_sqrt3of2) + ((2 * PI * s_L) / inTime))) * s_PRM) * s_gain;
 }
 
-void Robotino::CalcPWM()
+/*
+   set all counts of tics in encoders to zero
+*/
+void ClearCounts()
 {
-  m_pwm1 = m_omega1 / s_oneRPMtoPWM;
-  m_pwm2 = m_omega2 / s_oneRPMtoPWM;
-  m_pwm3 = m_omega3 / s_oneRPMtoPWM;
+  motor1Count = 0;
+  motor2Count = 0;
+  motor3Count = 0;
+}
+
+/*
+   convert all tics in encoders to RPM
+*/
+void ConvertTicsToRPM()
+{
+  motor1Count = ((motor1Count * s_oneMinuteInsec) / s_allTics);
+  motor2Count = ((motor2Count * s_oneMinuteInsec) / s_allTics);
+  motor3Count = ((motor3Count * s_oneMinuteInsec) / s_allTics);
+}
+
+void CalcPWM()
+{
+  pwm1 = robotino.GetOmega1() / s_oneRPMtoPWM;
+  pwm2 = robotino.GetOmega2() / s_oneRPMtoPWM;
+  pwm3 = robotino.GetOmega3() / s_oneRPMtoPWM;
 }
 
 
@@ -498,35 +410,35 @@ void Robotino::CalcPWM()
 ///////////////////////////////////
 ///////////PID regulator///////////
 ///////////////////////////////////
-
-
 /*
-   vars for PID regulator
-*/
 
-volatile double Kp = 0.00;
-volatile double Ki = 0.00;
-volatile double Kd = 0.00;
 
-double Setpoint1,
+  vars for PID regulator
+
+
+  volatile double Kp = 0.00;
+  volatile double Ki = 0.00;
+  volatile double Kd = 0.00;
+
+  double Setpoint1,
        Input1,
        Output1,
        SetpointMove1;
-PID pid1(&Input1, &Output1, &Setpoint1, Kp, Ki, Kd, DIRECT);
+  PID pid1(&Input1, &Output1, &Setpoint1, Kp, Ki, Kd, DIRECT);
 
-double Setpoint2,
+  double Setpoint2,
        Input2,
        Output2,
        SetpointMove2;
-PID pid2(&Input2, &Output2, &Setpoint2, Kp, Ki, Kd, DIRECT);
+  PID pid2(&Input2, &Output2, &Setpoint2, Kp, Ki, Kd, DIRECT);
 
-double Setpoint3,
+  double Setpoint3,
        Input3,
        Output3,
        SetpointMove3;
-PID pid3(&Input3, &Output3, &Setpoint3, Kp, Ki, Kd, DIRECT);
+  PID pid3(&Input3, &Output3, &Setpoint3, Kp, Ki, Kd, DIRECT);
 
-
+*/
 
 void setup()
 {
@@ -538,12 +450,12 @@ void setup()
   pinMode(s_encoder2PinB, INPUT);
   pinMode(s_encoder3PinA, INPUT);
   pinMode(s_encoder3PinB, INPUT);
-  attachInterrupt(s_encoder1PinA, Motor1InterruptAFunction, CHANGE);
-  attachInterrupt(s_encoder1PinB, Motor1InterruptAFunction, CHANGE);
-  attachInterrupt(s_encoder2PinA, Motor2InterruptBFunction, CHANGE);
-  attachInterrupt(s_encoder2PinB, Motor2InterruptBFunction, CHANGE);
-  attachInterrupt(s_encoder3PinA, Motor3InterruptAFunction, CHANGE);
-  attachInterrupt(s_encoder3PinB, Motor3InterruptBFunction, CHANGE);
+  attachInterrupt(s_encoder1PinA, Motor1InterruptA, CHANGE);
+  attachInterrupt(s_encoder1PinB, Motor1InterruptB, CHANGE);
+  attachInterrupt(s_encoder2PinA, Motor2InterruptA, CHANGE);
+  attachInterrupt(s_encoder2PinB, Motor2InterruptB, CHANGE);
+  attachInterrupt(s_encoder3PinA, Motor3InterruptA, CHANGE);
+  attachInterrupt(s_encoder3PinB, Motor3InterruptB, CHANGE);
 
   pinMode(s_pwmEngine1Fovard, OUTPUT);
   pinMode(s_pwmEngine1Back  , OUTPUT);
@@ -565,23 +477,25 @@ void setup()
 
   /*
      config PID regulator
+
+    pid1.SetMode(AUTOMATIC);
+    pid1.SetOutputLimits(0, 255);
+    Setpoint1 = 0;
+    SetpointMove1 = 0;
+
+
+    pid2.SetMode(AUTOMATIC);
+    pid2.SetOutputLimits(0, 255);
+    Setpoint2 = 0;
+    SetpointMove2 = 0;
+
+
+    pid3.SetMode(AUTOMATIC);
+    pid3.SetOutputLimits(0, 255);
+    Setpoint3 = 0;
+    SetpointMove3 = 0;
   */
-  pid1.SetMode(AUTOMATIC);
-  pid1.SetOutputLimits(0, 255);
-  Setpoint1 = 0;
-  SetpointMove1 = 0;
 
-
-  pid2.SetMode(AUTOMATIC);
-  pid2.SetOutputLimits(0, 255);
-  Setpoint2 = 0;
-  SetpointMove2 = 0;
-
-
-  pid3.SetMode(AUTOMATIC);
-  pid3.SetOutputLimits(0, 255);
-  Setpoint3 = 0;
-  SetpointMove3 = 0;
 
 
   /*
@@ -604,7 +518,7 @@ void SetConfiguration()
   robotino.WhichDirectonHbridge1();
   robotino.WhichDirectonHbridge2();
   robotino.WhichDirectonHbridge3();
-  robotino.CalcPWM();
+  CalcPWM();
 }
 
 
@@ -612,50 +526,50 @@ void loop()
 {
   //testing
 
-  robotino.ClearCounts();
+  ClearCounts();
   delay(1000);
-  robotino.ConvertTicsToRPM();
+  ConvertTicsToRPM();
 
   //engine 1
   if (robotino.GetDirection1() == true)
   {
-    analogWrite(s_pwmEngine1Fovard, robotino.GetPWM1());
+    analogWrite(s_pwmEngine1Fovard, pwm1);
   }
   else if (robotino.GetDirection1() == false)
   {
-    analogWrite(s_pwmEngine1Back, robotino.GetPWM1());
+    analogWrite(s_pwmEngine1Back, pwm1);
   }
 
   //engine 2
   if (robotino.GetDirection2() == true)
   {
-    analogWrite(s_pwmEngine2Fovard, robotino.GetPWM2());
+    analogWrite(s_pwmEngine2Fovard, pwm2);
   }
   else if (robotino.GetDirection2() == false)
   {
-    analogWrite(s_pwmEngine2Back, robotino.GetPWM2());
+    analogWrite(s_pwmEngine2Back, pwm2);
   }
 
   //engine 3
   if (robotino.GetDirection3() == true)
   {
-    analogWrite(s_pwmEngine3Fovard, robotino.GetPWM3());
+    analogWrite(s_pwmEngine3Fovard, pwm3);
   }
   else if (robotino.GetDirection3() == false)
   {
-    analogWrite(s_pwmEngine3Back, robotino.GetPWM3());
+    analogWrite(s_pwmEngine3Back, pwm3);
   }
 
-  Serial.print(" count1: ");   Serial.println(robotino.GetMotor1Count());
-  Serial.print(" count2: ");   Serial.println(robotino.GetMotor2Count());
-  Serial.print(" count3: ");   Serial.println(robotino.GetMotor3Count());
+  Serial.print(" count1: ");   Serial.println(motor1Count);
+  Serial.print(" count2: ");   Serial.println(motor2Count);
+  Serial.print(" count3: ");   Serial.println(motor3Count);
   Serial.print(" velocity: "); Serial.println(robotino.GetVelocity());
   Serial.print(" omega1: ");   Serial.println(robotino.GetOmega1());
   Serial.print(" omega2: ");   Serial.println(robotino.GetOmega2());
   Serial.print(" omega3: ");   Serial.println(robotino.GetOmega3());
-  Serial.print(" pwm1: ");     Serial.println(robotino.GetPWM1());
-  Serial.print(" pwm2: ");     Serial.println(robotino.GetPWM2());
-  Serial.print(" pwm3: ");     Serial.println(robotino.GetPWM3());
+  Serial.print(" pwm1: ");     Serial.println(pwm1);
+  Serial.print(" pwm2: ");     Serial.println(pwm2);
+  Serial.print(" pwm3: ");     Serial.println(pwm3);
   delay(1000);
 }
 
