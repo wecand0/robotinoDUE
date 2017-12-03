@@ -65,7 +65,6 @@ const byte s_pwmEngine3Back   = 6;
 /*
    parameters of robotino
 */
-const float s_gain      = 16;
 const float s_allTics   = 2000;
 const float s_oneMinuteInsec = 60;
 //const float s_oneRPMtoPWM  = 17;     // 17 RPM == 1 PWM  without load
