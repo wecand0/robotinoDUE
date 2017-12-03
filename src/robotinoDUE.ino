@@ -65,15 +65,12 @@ const byte s_pwmEngine3Back   = 6;
 /*
    parameters of robotino
 */
-const float s_L          = 125;            //Distance from robot center to whell center in mm;
-const float s_RW        = 80;             //Radius of the wheels in mm.
-const float s_sqrt3of2  = 0.86602540;     //sqrt(3)/2
-const float s_PRM       = 19.1;           //(60 * GEAR) / (2 * PI * RW ); GEAR == 16
-const float s_gain      = 20;
+const float s_gain      = 16;
 const float s_allTics   = 2000;
 const float s_oneMinuteInsec = 60;
 //const float s_oneRPMtoPWM  = 17;     // 17 RPM == 1 PWM  without load
 const float s_oneRPMtoPWM    = 15;     // 15 RPM == 1 PWM  with load
+const float s_GAIN = 16.0;
 
 
 volatile double motor1Count;
@@ -82,6 +79,14 @@ volatile double motor3Count;
 volatile int pwm1;
 volatile int pwm2;
 volatile int pwm3;
+
+volatile double omega1;
+volatile double omega2;
+volatile double omega3;
+
+
+CircleMode circleMode;
+RobotinoDUE robot;
 
 
 /*
@@ -210,9 +215,9 @@ void ConvertTicsToRPM()
 
 void CalcPWM()
 {
-  pwm1 = robotino.GetOmega1() / s_oneRPMtoPWM;
-  pwm2 = robotino.GetOmega2() / s_oneRPMtoPWM;
-  pwm3 = robotino.GetOmega3() / s_oneRPMtoPWM;
+  pwm1 = robot.GetOmega1() * s_GAIN  / s_oneRPMtoPWM;
+  pwm2 = robot.GetOmega2() * s_GAIN  / s_oneRPMtoPWM;
+  pwm3 = robot.GetOmega3() * s_GAIN  / s_oneRPMtoPWM;
 }
 
 
@@ -325,15 +330,24 @@ void SetConfiguration()
   float radius = 318; //cm
   float inTime = 20;  //seconds
 
-  robotino.SetVelocity(radius, inTime);   // ->  ~ 100 mm/s
-  robotino.SetOmega1(inTime);             // -> ~ -225 PRM
-  robotino.SetOmega2(inTime);             // ->  ~ 187  PRM
-  robotino.SetOmega3(inTime);             // ->  ~ 600  PRM
-  robotino.WhichDirectonHbridge1();
-  robotino.WhichDirectonHbridge2();
-  robotino.WhichDirectonHbridge3();
+  robot.SetMode(true, false);
+  robot.SetRadius(318.31);
+  robot.SetTime(10);
+  robot.SetVelocityX();
+  robot.SetVelocityY();
+  robot.CalcOmega1();
+  robot.CalcOmega2();
+  robot.CalcOmega3();
+  robot.SetOmega1();
+  robot.SetOmega2();
+  robot.SetOmega3();
   CalcPWM();
 }
+
+
+
+
+
 
 
 void loop()
@@ -345,45 +359,45 @@ void loop()
   ConvertTicsToRPM();
 
   //engine 1
-  if (robotino.GetDirection1() == true)
+  if (robot.GetDirection1() == true)
   {
     analogWrite(s_pwmEngine1Fovard, pwm1);
   }
-  else if (robotino.GetDirection1() == false)
+  else if (robot.GetDirection1() == false)
   {
     analogWrite(s_pwmEngine1Back, pwm1);
   }
 
   //engine 2
-  if (robotino.GetDirection2() == true)
+  if (robot.GetDirection2() == true)
   {
     analogWrite(s_pwmEngine2Fovard, pwm2);
   }
-  else if (robotino.GetDirection2() == false)
+  else if (robot.GetDirection2() == false)
   {
     analogWrite(s_pwmEngine2Back, pwm2);
   }
 
   //engine 3
-  if (robotino.GetDirection3() == true)
+  if (robot.GetDirection3() == true)
   {
     analogWrite(s_pwmEngine3Fovard, pwm3);
   }
-  else if (robotino.GetDirection3() == false)
+  else if (robot.GetDirection3() == false)
   {
     analogWrite(s_pwmEngine3Back, pwm3);
   }
 
-  Serial.print(" count1: ");   Serial.println(motor1Count);
-  Serial.print(" count2: ");   Serial.println(motor2Count);
-  Serial.print(" count3: ");   Serial.println(motor3Count);
-  Serial.print(" velocity: "); Serial.println(robotino.GetVelocity());
-  Serial.print(" omega1: ");   Serial.println(robotino.GetOmega1());
-  Serial.print(" omega2: ");   Serial.println(robotino.GetOmega2());
-  Serial.print(" omega3: ");   Serial.println(robotino.GetOmega3());
-  Serial.print(" pwm1: ");     Serial.println(pwm1);
-  Serial.print(" pwm2: ");     Serial.println(pwm2);
-  Serial.print(" pwm3: ");     Serial.println(pwm3);
+  Serial.print(" count1: ");    Serial.println(motor1Count);
+  Serial.print(" count2: ");    Serial.println(motor2Count);
+  Serial.print(" count3: ");    Serial.println(motor3Count);
+  Serial.print(" velocityY: "); Serial.println(robot.GetVelocityY());
+  Serial.print(" omega1: ");    Serial.println(robot.GetOmega1()  * s_GAIN );
+  Serial.print(" omega2: ");    Serial.println(robot.GetOmega2()  * s_GAIN );
+  Serial.print(" omega3: ");    Serial.println(robot.GetOmega3()  * s_GAIN );
+  Serial.print(" pwm1: ");      Serial.println(pwm1);
+  Serial.print(" pwm2: ");      Serial.println(pwm2);
+  Serial.print(" pwm3: ");      Serial.println(pwm3);
   delay(1000);
 }
 
@@ -400,5 +414,6 @@ void BouncingMode()
 {
 
 }
+
 
 
