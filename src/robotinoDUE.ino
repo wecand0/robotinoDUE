@@ -5,7 +5,7 @@
 
 /*
    created: 25 nov. 2017
-   by Vadim Shorin
+   by Vadim S.
    board: arduino due
 */
 
